@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+/* Styled Components überschreiben globales CSS */
+
+:root {
+  --bg-color: ##fff;
+  --bg-color-highlight: rgba(198, 220, 225, 0.2);
+  --primary-color: #004a99;
+  --secondary-color: #b5a286;
+  --text-color: #000;
+  --placeholder-color: grey;
+}
+
+body {
+  color: var(--text-color);
+  font-family: "Segoe UI Variable Text", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--primary-color);
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+h2 {
+  font-size: 2rem;
+}
+h3 {
+  font-size: 1.5rem;
+}
+h4 {
+  font-size: 1.2rem;
+}
+h5 {
+  font-size: 1rem;
+}
+h6 {
+  font-size: 0.8rem;
+}
+
+input {
+  background-color: white;
+  width: 300px;
+}
+
+input::placeholder {
+  color: var(--placeholder-color);
+}
+
+textarea {
+  background-color: white;
+  width: 400px;
+}
+
+textarea::placeholder {
+  color: var(--placeholder-color);
+}
+
+fieldset {
+  border: #004a99 1px solid;
+
+  /* fieldsets Inhalt zentrieren */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+
+  padding: 1rem;
+  margin: 2rem 0;
+}
+
+.spacebetween {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.spacebetween-info {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
