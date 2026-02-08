@@ -28,7 +28,7 @@ export default function Dashboard() {
       // 📥 Profil laden — nur vorhandene Felder anfragen (ohne role)
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('company_name, company_street, company_house_nr, company_zip, company_city, company_contact_person, isadmin')
+        .select('company_name, company_street, company_house_nr, company_zip, company_city, company_contact_person, iscoworker')
         .eq('id', user.id)
         .single();
 
@@ -36,8 +36,8 @@ export default function Dashboard() {
         console.error('Fehler beim Laden des Profils:', profileError.message || profileError);
       } else {
         setProfile(profileData);
-        // Falls du isAdmin später verwenden möchtest:
-        if (profileData?.isadmin) setUserRole('admin');
+        // Falls du isCoworker später verwenden möchtest:
+        if (profileData?.iscoworker) setUserRole('coworker');
       }
 
 
@@ -49,10 +49,10 @@ export default function Dashboard() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (profileData?.isadmin) {
-        // Admin sieht alle eingereichten Formulare
+      if (profileData?.iscoworker) {
+        // Coworker sieht alle eingereichten Formulare
         formsQuery = formsQuery.eq('status', 'submitted');
-        setUserRole('admin');
+        setUserRole('coworker');
       } else {
         // Normaler Nutzer sieht nur eigene Formulare
         formsQuery = formsQuery.eq('user_id', user.id);
@@ -169,19 +169,19 @@ const refreshForms = async () => {
 
   const { data: profileData } = await supabase
     .from('profiles')
-    .select('company_name, isadmin')
+    .select('company_name, iscoworker')
     .eq('id', user.id)
     .single();
 
   setProfile(profileData);
-  if (profileData?.isadmin) setUserRole('admin');
+  if (profileData?.iscoworker) setUserRole('coworker');
 
   let formsQuery = supabase
     .from('forms')
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (profileData?.isadmin) {
+  if (profileData?.iscoworker) {
     formsQuery = formsQuery.eq('status', 'submitted');
   } else {
     formsQuery = formsQuery.eq('user_id', user.id);
@@ -224,7 +224,7 @@ const refreshForms = async () => {
           </StyledContainer>
         </StyledSection>
 
-{userRole !== 'admin' && (
+{userRole !== 'coworker' && (
         <StyledSection>
           <StyledContainer>
             <h2>Ihre Profildaten:</h2>
@@ -244,7 +244,7 @@ const refreshForms = async () => {
           </StyledContainer>
         </StyledSection>
         )}
-{userRole !== 'admin' && (
+{userRole !== 'coworker' && (
         <StyledSection>
           <StyledContainer>
             <h2>Projekt liefern</h2>
@@ -259,14 +259,14 @@ const refreshForms = async () => {
         
         <StyledSection>
           <StyledContainer>
-            <h2>{userRole === 'admin' ? 'Alle eingereichten Formulare' : 'Bereits bearbeitete Formulare:'}</h2>
+            <h2>{userRole === 'coworker' ? 'Alle eingereichten Formulare' : 'Bereits bearbeitete Formulare:'}</h2>
             {forms.length === 0 ? (
               <p>Es wurden noch keine Formulare ausgefüllt.</p>
             ) : (
               <ul>
                 {forms.map((form) => (
                   <StyledList key={form.id}>
-                    {userRole === 'admin' && (
+                    {userRole === 'coworker' && (
                       <>
                         🏢 {form.company_name || 'Unbekannte Firma'} –{' '}
                       </>
@@ -287,7 +287,7 @@ const refreshForms = async () => {
       PDF
     </StyledButton>
 
-    {userRole === 'admin' && form.status === 'submitted' && (
+    {userRole === 'coworker' && form.status === 'submitted' && (
   <StyledButton
     onClick={async () => {
       const { error } = await supabase

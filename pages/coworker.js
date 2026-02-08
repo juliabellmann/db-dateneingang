@@ -1,8 +1,8 @@
-// pages/admin.js
+// pages/coworker.js
 import { useEffect, useState } from 'react';
 import supabase from '../lib/supabaseClient';
 
-export default function Admin() {
+export default function Coworker() {
   const [forms, setForms] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,10 +26,10 @@ export default function Admin() {
         return;
       }
 
-      // Check admin flag in profiles
+      // Check Coworker flag in profiles
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('isAdmin')
+        .select('isCoworker')
         .eq('id', user.id)
         .single();
 
@@ -39,17 +39,17 @@ export default function Admin() {
         return;
       }
 
-      if (!profile?.isadmin) {
-        console.warn('Kein Admin');
+      if (!profile?.iscoworker) {
+        console.warn('Kein Coworker');
         setLoading(false);
         return;
       }
 
-      // Admin: load all forms and include user email & profile info
+      // Coworker: load all forms and include user email & profile info
       const { data, error } = await supabase
         .from('forms')
         // join auth.users for email and public.profiles for additional profile fields
-        .select('*, users:users (email), profiles:profiles (company_name, isAdmin)')
+        .select('*, users:users (email), profiles:profiles (company_name, isCoworker)')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -74,7 +74,7 @@ export default function Admin() {
         <div key={f.id} style={{ border: '1px solid #ccc', marginBottom: 10, padding: 10 }}>
           <p>
             <strong>Benutzer:</strong> {f.users?.email || f.profiles?.company_name || 'Unbekannt'}
-            {f.profiles?.isdmin ? ' (Admin)' : ''}
+            {f.profiles?.isdmin ? ' (Coworker)' : ''}
           </p>
           <p>
             <strong>Stadt:</strong> {f.city}

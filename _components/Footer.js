@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import supabase from '../lib/supabaseClient'; // Pfad ggf. anpassen
 
 export default function Footer() {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isCoworker, setIsCoworker] = useState(false);
 
   useEffect(() => {
     const fetchProfileAndRole = async () => {
@@ -13,27 +13,27 @@ export default function Footer() {
       } = await supabase.auth.getUser();
 
       if (userError || !user) {
-        setIsAdmin(false);
+        setIsCoworker(false);
         return;
       }
 
       // 🔁 EXAKT wie im Dashboard
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('isadmin')
+        .select('iscoworker')
         .eq('id', user.id)
         .single();
 
       if (profileError) {
         console.error('Fehler beim Laden des Profils (Footer):', profileError.message || profileError);
-        setIsAdmin(false);
+        setIsCoworker(false);
         return;
       }
 
-      if (profileData?.isadmin) {
-        setIsAdmin(true);
+      if (profileData?.iscoworker) {
+        setIsCoworker(true);
       } else {
-        setIsAdmin(false);
+        setIsCoworker(false);
       }
     };
 
@@ -50,17 +50,17 @@ export default function Footer() {
   }, []);
 
   return (
-  <StyledFooter $isAdmin={isAdmin}>
+  <StyledFooter $isCoworker={isCoworker}>
     <p>
-      {isAdmin ? 'Mitarbeiter Ansicht - reworked' : 'Copyright © BKI - reworked'}
+      {isCoworker ? 'Mitarbeiter Ansicht - reworked' : 'Copyright © BKI - reworked'}
     </p>
   </StyledFooter>
   );
 }
 
 const StyledFooter = styled.footer`
-  background-color: ${({ $isAdmin }) =>
-    $isAdmin ? 'green' : 'var(--primary-color)'};
+  background-color: ${({ $isCoworker }) =>
+    $isCoworker ? 'green' : 'var(--primary-color)'};
 
   color: white;
 
