@@ -52,7 +52,7 @@ export default function Footer() {
   return (
   <StyledFooter $isAdmin={isAdmin}>
     <p>
-      {isAdmin ? 'Mitarbeiter Ansicht' : 'Copyright © BKI'}
+      {isAdmin ? 'Mitarbeiter Ansicht - reworked' : 'Copyright © BKI - reworked'}
     </p>
   </StyledFooter>
   );

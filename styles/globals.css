@@ -5,8 +5,8 @@
 :root {
   --bg-color: ##fff;
   --bg-color-highlight: rgba(198, 220, 225, 0.2);
-  --primary-color: #004a99;
-  --secondary-color: #b5a286;
+  --primary-color: #10444e;
+  --secondary-color: #529479;
   --text-color: #000;
   --placeholder-color: grey;
 }
@@ -63,7 +63,7 @@ textarea::placeholder {
 }
 
 fieldset {
-  border: #004a99 1px solid;
+  border: var(--primary-color) 1px solid;
 
   /* fieldsets Inhalt zentrieren */
   display: flex;

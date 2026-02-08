@@ -345,14 +345,14 @@ const StyledContainer = styled.div`
 `;
 
 const StyledButton = styled.button`
-  background-color: #b5a286;
+  background-color: var(--secondary-color);
   color: white;
   border: none;
   padding: 0.5rem 1rem;
   cursor: pointer;
 
   &:hover {
-    background-color: #b5a286;
+    background-color: var(--secondary-color);
     text-decoration: underline;
   }
 `;
