@@ -52,16 +52,14 @@ export default function Footer() {
   return (
   <StyledFooter $isCoworker={isCoworker}>
     <p>
-      {isCoworker ? 'Mitarbeiter Ansicht - reworked' : 'Copyright © BKI - reworked'}
+      {isCoworker ? 'Ansicht für Mitarbeiter' : 'Ansicht für Datenlieferanten'}
     </p>
   </StyledFooter>
   );
 }
 
 const StyledFooter = styled.footer`
-  background-color: ${({ $isCoworker }) =>
-    $isCoworker ? 'green' : 'var(--primary-color)'};
-
+  background-color: var(--primary-color);
   color: white;
 
   margin-top: 4rem;
