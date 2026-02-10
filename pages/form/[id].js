@@ -1,20 +1,37 @@
 // pages/form/[id].js
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import supabase from "../../lib/supabaseClient";
-import styled from "styled-components";
-// npm install react-toastify
-import { toast } from "react-toastify";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import InfoTooltip from "@/_components/InfoTooltip";
 
-// import { useState } from "react";
+
+// React-Hooks für State-Management und Side Effects
+import { useEffect, useState } from "react";
+
+// Supabase-Client für Authentifizierung und Datenbankzugriffe
+import supabase from "../../lib/supabaseClient";
+
+// Next.js Router zum programmgesteuerten Navigieren
+import { useRouter } from "next/router";
+
+// Toast-Benachrichtigungen (Feedback für Nutzeraktionen)
+// zum Installieren: npm install react-toastify
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// Styled Components für Layout und Styling
+import styled from "styled-components";
+
+// Eigene Tooltip-Komponente (hier importiert, aktuell nicht verwendet)
+//import InfoTooltip from "@/_components/InfoTooltip";
+
 
 export default function Form() {
+  // Router-Instanz für Redirects (z. B. nach dem Speichern)
   const router = useRouter();
+  // ID aus der URL (z. B. /form/123 oder /form/new)
   const { id } = router.query;
 
+  // Zustand zum Sperren des Formulars
+  const [isReadonly, setIsReadonly] = useState(false);
+
+  // State für lokal ausgewählte Dateien (noch nicht hochgeladen)
   const [files, setFiles] = useState({
     image: null,
     one: null,
@@ -22,6 +39,7 @@ export default function Form() {
     three: null,
   });
 
+  // State für Vorschau-URLs der hochgeladenen Dateien (lokal oder via signed URL)
   const [previews, setPreviews] = useState({
     image: null,
     one: null,
@@ -29,95 +47,49 @@ export default function Form() {
     three: null,
   });
 
-  // hier das neue Formularfeld ergänzen
+  // Formular-Daten (entspricht im Wesentlichen der DB-Struktur)
   const [formData, setFormData] = useState({
     status: "draft",
-
     objektbezeichnung: "",
-    // bauherr: "",
-
-    // street: "",
-    // housenumber: "",
-    // postalcode: "",
     city: "",
-    // landkreis: "",
-    // bundesland: "",
 
-    // planungsbeginn: "",
-    // vergabedatum: "",
-    // baubeginn: "",
-    // bauende: "",
 
-    // fotograf: "",
-
-    // NE_buero: "",
-    // NE_institut: "",
-    // NE_krankenhaus: "",
-    // NE_pflegeheim: "",
-    // NE_schule_schueler: "",
-    // NE_schule_klassen: "",
-    // NE_kindergarten_kinder: "",
-    // NE_kindergarten_gruppen: "",
-    // NE_wohngebaude: "",
-    // NE_heim: "",
-    // NE_versammlungsgebauede: "",
-    // NE_gaststaette: "",
-    // NE_hotel: "",
-    // NE_laborgebaeude: "",
-    // NE_produktionsstaette: "",
-    // NE_feuerwache: "",
-    // NE_parkhaus: "",
-    // NE_sonst_anz: "",
-
-    // UGs_anz: "",
-    // UGs_beschreibung: "",
-    // EGs_anz: "",
-    // EGs_beschreibung: "",
-    // OGs_anz: "",
-    // OGs_beschreibung: "",
-    // DGs_anz: "",
-    // DGs_beschreibung: "",
-
-    // allgemeine_objektinformation: "",
-    // baukonstruktion: "",
-    // technische_anlagen: "",
-    // beschreibung_sonstiges: "",
-    // region: "",
-    // konjunktur: "",
-    // standard: "",
-    // nuf: "",
-    // vf: "",
-    // tf: "",
-    // bgf: "",
+    // Dateipfade aus dem Supabase Storage / Bucket
     image_file_path: null,
     upload_one_path: null,
     upload_two_path: null,
     upload_three_path: null,
   });
 
-  const [isReadonly, setIsReadonly] = useState(false); // ⬅️ Zustand zum Sperren des Formulars
+
+
   // Hilfsfunktion: signed URL für bestehendes Bild erzeugen
   async function refreshSignedUrl(key, filePath) {
+    // Wenn kein Pfad vorhanden ist, Vorschau zurücksetzen
     if (!filePath) {
       setPreviews((prev) => ({ ...prev, [key]: null }));
       return;
     }
 
+    // Signed URL mit 10 Minuten Gültigkeit erzeugen
     const { data, error } = await supabase.storage
       .from("form_files")
       .createSignedUrl(filePath, 60 * 10);
 
+    // Fehlerbehandlung
     if (error) {
       console.error("Signed URL Fehler:", error);
       setPreviews((prev) => ({ ...prev, [key]: null }));
       return;
     }
 
+    // Vorschau-URL im State speichern
     setPreviews((prev) => ({ ...prev, [key]: data.signedUrl }));
   }
 
-  // Formular laden
+  // Formular aus der Datenbank laden (bei bestehender ID)
   useEffect(() => {
+    // Nur laden, wenn eine ID vorhanden ist und es kein neues Formular ist
     if (id && id !== "new") {
       supabase
         .from("forms")
@@ -130,8 +102,13 @@ export default function Form() {
             return;
           }
           if (data) {
+            // Formulardaten in den State übernehmen
             setFormData((prev) => ({ ...prev, ...data }));
+
+            // Formular sperren, wenn Status "submitted"
             if (data.status === "submitted") setIsReadonly(true);
+
+            // Signed URLs für vorhandene Dateien erzeugen
             if (data.image_file_path)
               await refreshSignedUrl("image", data.image_file_path);
 
@@ -148,17 +125,21 @@ export default function Form() {
     }
   }, [id]);
 
-  // Datei-Auswahl
+  // Behandlung der Dateiauswahl im Formular
   function handleFileChange(key, e) {
+    // Erste ausgewählte Datei oder null
     const f = e.target.files?.[0] || null;
 
+    // Datei im State speichern
     setFiles((prev) => ({ ...prev, [key]: f }));
 
+    // Falls keine Datei ausgewählt wurde → Vorschau entfernen
     if (!f) {
       setPreviews((prev) => ({ ...prev, [key]: null }));
       return;
     }
 
+    // Nur bei Bilddateien eine lokale Vorschau erzeugen
     if (f.type.startsWith("image/")) {
       const localUrl = URL.createObjectURL(f);
       setPreviews((prev) => ({ ...prev, [key]: localUrl }));
@@ -172,10 +153,14 @@ export default function Form() {
     // Prüfe aktuellen User
     const { data: userData, error: userErr } = await supabase.auth.getUser();
     console.log("uploadFile - auth.getUser result:", userData, userErr);
+
+    // Abbruch, falls kein User eingeloggt ist
     if (userErr || !userData?.user) throw new Error("Nicht eingeloggt");
+
     const userId = userData.user.id;
 
     // Baue Dateipfad (wichtig für RLS-Policy wenn Pfad-Check verwendet wird)
+    // Dateipfad: userId/timestamp-dateiname
     const filePath = `${userId}/${Date.now()}-${fileToUpload.name}`;
     console.log(
       "uploadFile - filePath:",
@@ -184,6 +169,7 @@ export default function Form() {
       fileToUpload.type,
     );
 
+    // Upload in den Bucket "form_files"
     const { data, error: upErr } = await supabase.storage
       .from("form_files")
       .upload(filePath, fileToUpload, {
@@ -193,21 +179,28 @@ export default function Form() {
       });
 
     console.log("uploadFile - upload result:", { data, upErr });
+
+    // Fehler weiterwerfen
     if (upErr) throw upErr;
+    // Pfad der hochgeladenen Datei zurückgeben
     return filePath;
   }
 
-  // Speichern (Zwischenspeichern / Aktualisieren)
+  // Zwischenspeichern oder Aktualisieren des Formulars
   const handleSave = async () => {
+
+    // Im Readonly-Modus keine Änderungen erlauben
     if (isReadonly) return;
 
     try {
+      // Prüfen, ob User eingeloggt ist
       const { data: userRes } = await supabase.auth.getUser();
       if (!userRes?.user) {
         toast.error("Bitte einloggen.");
         return;
       }
 
+      // Aktuelle Dateipfade aus dem Formular
       let {
         image_file_path,
         upload_one_path,
@@ -215,11 +208,13 @@ export default function Form() {
         upload_three_path,
       } = formData;
 
+      // Neue Dateien hochladen und Pfade ersetzen
       if (files.image) image_file_path = await uploadFile(files.image);
       if (files.one) upload_one_path = await uploadFile(files.one);
       if (files.two) upload_two_path = await uploadFile(files.two);
       if (files.three) upload_three_path = await uploadFile(files.three);
 
+      // Payload für Insert / Update
       const payload = {
         ...formData,
         user_id: userRes.user.id,
@@ -230,17 +225,24 @@ export default function Form() {
         upload_three_path,
       };
 
+      // Lokale Dateiauswahl zurücksetzen
       setFiles({ image: null, one: null, two: null, three: null });
 
+
+      // Neues Formular anlegen
       if (id === "new") {
         const { error: insertErr } = await supabase
           .from("forms")
           .insert(payload);
         if (insertErr) throw insertErr;
+
         toast.success("Formular erfolgreich zwischengespeichert!", {
           position: "top-right",
         });
-      } else {
+      } 
+
+      // Bestehendes Formular aktualisieren
+      else {
         const { error: updateErr } = await supabase
           .from("forms")
           .update(payload)
@@ -250,6 +252,8 @@ export default function Form() {
           position: "top-center",
         });
       }
+
+      // Pfade im State aktualisieren
       setFormData((prev) => ({
         ...prev,
         image_file_path,
@@ -258,12 +262,10 @@ export default function Form() {
         upload_three_path,
       }));
 
+      // Signed URLs nach dem Upload erneuern
       if (image_file_path) await refreshSignedUrl("image", image_file_path);
-
       if (upload_one_path) await refreshSignedUrl("one", upload_one_path);
-
       if (upload_two_path) await refreshSignedUrl("two", upload_two_path);
-
       if (upload_three_path) await refreshSignedUrl("three", upload_three_path);
     } catch (error) {
       console.error("handleSave error:", error);
@@ -273,26 +275,32 @@ export default function Form() {
     }
   };
 
-  // Absenden (final)
+  // Finales Absenden des Formulars
   const handleSubmit = async () => {
+    // Keine Aktion im Readonly-Modus
     if (isReadonly) return;
+
     const { error } = await supabase
       .from("forms")
       .update({ ...formData, status: "submitted" })
       .eq("id", id);
+
     if (error) {
       console.error(error);
       toast.error("Fehler beim Absenden.");
       return;
     }
+
+    // Nach dem Absenden zurück zum Dashboard
     router.push("/dashboard");
   };
 
-  // PDF Download
+  // Öffnet den PDF-Download in einem neuen Tab
   const downloadPdf = () => {
     window.open(`/api/downloadPdf?id=${id}`, "_blank");
   };
 
+  // Download einer einzelnen hochgeladenen Datei
   const handleDownloadFile = async (filePath) => {
     if (!filePath) {
       toast.error("Keine Datei vorhanden.");
@@ -300,12 +308,14 @@ export default function Form() {
     }
 
     try {
+      // Temporäre Download-URL erzeugen
       const { data, error } = await supabase.storage
         .from("form_files")
         .createSignedUrl(filePath, 60 * 10);
 
       if (error) throw error;
 
+      // Download per unsichtbarem <a>-Element auslösen
       const link = document.createElement("a");
       link.href = data.signedUrl;
       link.download = filePath.split("/").pop();
@@ -318,12 +328,13 @@ export default function Form() {
     }
   };
 
+  // Dateiname für Anzeige aufbereiten (ohne führende Zahlen)
   const getDisplayFileName = (path) => {
     if (!path) return "";
 
     const fileName = path.split("/").pop();
 
-    // entfernt führende Zahlen + _ oder -
+    // Entfernt führende Zahlen + "_" oder "-"
     return fileName.replace(/^\d+[_-]/, "");
   };
 
@@ -510,6 +521,10 @@ export default function Form() {
   );
 }
 
+// =======================
+// Styled Components
+// =======================
+
 const StyledSite = styled.div`
   display: flex;
   flex-direction: column;
@@ -564,6 +579,7 @@ const StyledRadiobuttons = styled.div`
   }
 `;
 
+// Zurück-Button im Readonly-Modus
 const StyledBackButton = styled.button`
   background-color: #777;
   color: white;
@@ -577,12 +593,7 @@ const StyledBackButton = styled.button`
   }
 `;
 
-const StyledFieldTooltip = styled.div`
-  min-width: 400px;
-
-  display: flex;
-`;
-
+// Wrapper für Upload-Bereiche
 const StyledUploads = styled.div`
   display: flex;
   flex-direction: column;
