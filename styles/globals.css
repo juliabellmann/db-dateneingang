@@ -4,20 +4,20 @@
 
 :root {
   --bg-color: #fff;
-  --bg-color-highlight: rgba(34, 209, 249, 0.2);
-  --primary-color: #07a1c0;
-  --secondary-color: #0027e9;
-  --text-color: #cc0000;
-  --placeholder-color: rgb(169, 0, 0);
+  --bg-color-highlight: rgba(198, 220, 225, 0.2);
+  --primary-color: #004a99;
+  --secondary-color: #c5b091;
+  --text-color: #000;
+  --placeholder-color: rgb(66, 66, 66);
 }
 
 :root[data-role="coworker"] {
-  --bg-color: #f4fff9;
-  --bg-color-highlight: rgba(82, 148, 121, 0.25);
+  --bg-color: #e9fee9;
+  --bg-color-highlight: #a1d2bd40;
   --primary-color: #0f3f35;
   --secondary-color: #2e8b6d;
-  --text-color: #063028;
-  --placeholder-color: #4f7f6d;
+  --text-color: #000;
+  --placeholder-color: rgb(68, 71, 68);
 }
 
 body {

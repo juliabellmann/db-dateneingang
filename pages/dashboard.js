@@ -304,26 +304,33 @@ const refreshForms = async () => {
     </StyledButton>
 
     {userRole === 'coworker' && form.status === 'submitted' && (
-  <StyledButton
-    onClick={async () => {
-      const { error } = await supabase
-        .from('forms')
-        .update({ status: 'draft' })
-        .eq('id', form.id);
+      // Button zum wieder Freigeben des Formulars für den Datenlieferanten inkl. windows confirm Fenster
+<StyledButton
+  onClick={async () => {
+    const confirmed = window.confirm(
+      'Achtung: Wenn das Formular wieder zur Bearbeitung freigeben wird, verschwindet es aus der Liste aller eingereichten Formulare.\n\nTrotzdem fortfahren?'
+    );
 
-      if (error) {
-        alert('Fehler beim Zurücksetzen auf Draft');
-        console.error(error);
-      } else {
-        alert('Formular wurde auf Draft zurückgesetzt');
-        // Forms neu laden
-        await refreshForms();
-      }
-    }}
-    style={{ backgroundColor: '#c66' }}
-  >
-    Auf Draft zurücksetzen
-  </StyledButton>
+    if (!confirmed) return;
+
+    const { error } = await supabase
+      .from('forms')
+      .update({ status: 'draft' })
+      .eq('id', form.id);
+
+    if (error) {
+      alert('Fehler beim Zurücksetzen auf Draft');
+      console.error(error);
+    } else {
+      alert('Formular wurde wieder freigegeben');
+      await refreshForms();
+    }
+  }}
+  style={{ backgroundColor: '#c66' }}
+>
+  Formular wieder freigeben
+</StyledButton>
+
 )}
 
   </>
