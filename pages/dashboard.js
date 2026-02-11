@@ -326,7 +326,7 @@ const refreshForms = async () => {
       await refreshForms();
     }
   }}
-  style={{ backgroundColor: '#c66' }}
+  style={{ backgroundColor: 'var(--btn-draft-reset-color)' }}
 >
   Formular wieder freigeben
 </StyledButton>
