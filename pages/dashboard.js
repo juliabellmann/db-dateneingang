@@ -11,6 +11,20 @@ export default function Dashboard() {
   const router = useRouter();
   const [userRole, setUserRole] = useState('user'); // bleibt 'user' ohne role-Feld
 
+  //Status-Mapping
+const getStatusLabel = (status) => {
+  switch (status) {
+    case 'submitted':
+      return 'Eingereicht';
+    case 'draft':
+      return 'In Bearbeitung';
+    default:
+      return status; // Fallback für unbekannte Stati
+  }
+};
+
+
+
   useEffect(() => {
     const getUserFormsAndProfile = async () => {
       const {
@@ -211,6 +225,8 @@ const refreshForms = async () => {
   setForms(enrichedForms);
 };
 
+
+
   return (
     <>
       <StyledDashboard>
@@ -271,7 +287,7 @@ const refreshForms = async () => {
                         🏢 {form.company_name || 'Unbekannte Firma'} –{' '}
                       </>
                     )}
-                    📖Objekt: {form.objektbezeichnung || 'Noch nicht angegeben'} – Status: {form.status}
+                    📖Objekt: {form.objektbezeichnung || 'Noch nicht angegeben'} – Status: {getStatusLabel(form.status)}
                     <div>
                       <StyledButton onClick={() => continueForm(form.id)}>
                         {form.status === 'draft' ? 'Weiter bearbeiten' : 'Ansehen'}

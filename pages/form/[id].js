@@ -62,7 +62,6 @@ export default function Form() {
   });
 
 
-
   // Hilfsfunktion: signed URL für bestehendes Bild erzeugen
   async function refreshSignedUrl(key, filePath) {
     // Wenn kein Pfad vorhanden ist, Vorschau zurücksetzen
