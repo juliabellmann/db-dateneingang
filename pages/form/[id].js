@@ -573,6 +573,31 @@ export default function Form() {
           </>
         )}
         <ToastContainer position="top-right" />
+
+        <FixedActionBar>
+  <StyledButton
+    type="button"
+    onClick={handleSave}
+    disabled={isReadonly}
+  >
+    Zwischenspeichern
+  </StyledButton>
+
+  <StyledButton
+    type="button"
+    onClick={() => router.push("/dashboard")}
+  >
+    Zurück zur Übersicht
+  </StyledButton>
+
+  <StyledButton
+    type="button"
+    onClick={handleSubmit}
+    disabled={isReadonly}
+  >
+    Absenden
+  </StyledButton>
+</FixedActionBar>
       </StyledSite>
     </>
   );
@@ -654,4 +679,20 @@ const StyledBackButton = styled.button`
 const StyledUploads = styled.div`
   display: flex;
   flex-direction: column;
+`;
+
+const FixedActionBar = styled.div`
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+
+  z-index: 1000;
+
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 `;
