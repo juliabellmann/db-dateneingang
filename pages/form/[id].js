@@ -124,28 +124,86 @@ export default function Form() {
     }
   }, [id]);
 
+
   // Behandlung der Dateiauswahl im Formular
-  function handleFileChange(key, e) {
-    // Erste ausgewählte Datei oder null
-    const f = e.target.files?.[0] || null;
+  async function handleFileChange(key, e) {
+  if (isReadonly) return;
 
-    // Datei im State speichern
-    setFiles((prev) => ({ ...prev, [key]: f }));
+  const f = e.target.files?.[0] || null;
 
-    // Falls keine Datei ausgewählt wurde → Vorschau entfernen
-    if (!f) {
-      setPreviews((prev) => ({ ...prev, [key]: null }));
-      return;
-    }
+  // Falls keine Datei gewählt wurde
+  if (!f) {
+    setFiles((prev) => ({ ...prev, [key]: null }));
+    setPreviews((prev) => ({ ...prev, [key]: null }));
+    return;
+  }
 
-    // Nur bei Bilddateien eine lokale Vorschau erzeugen
+  try {
+    // 1️⃣ Lokale Vorschau sofort anzeigen
     if (f.type.startsWith("image/")) {
       const localUrl = URL.createObjectURL(f);
       setPreviews((prev) => ({ ...prev, [key]: localUrl }));
-    } else {
-      setPreviews((prev) => ({ ...prev, [key]: null }));
     }
+
+    // 2️⃣ Datei direkt hochladen
+    const uploadedPath = await uploadFile(f);
+
+    // 3️⃣ Richtigen DB-Feldnamen bestimmen
+    let fieldName;
+
+    if (key === "image") {
+      fieldName = "image_file_path";
+    } else {
+      fieldName = `upload_${key}_path`;
+    }
+
+    // 4️⃣ FormData aktualisieren
+    const updatedFormData = {
+      ...formData,
+      [fieldName]: uploadedPath,
+      status: "draft",
+    };
+
+    setFormData(updatedFormData);
+
+    // 5️⃣ Falls neues Formular → zuerst anlegen
+    if (id === "new") {
+      const { data, error } = await supabase
+        .from("forms")
+        .insert(updatedFormData)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success("Datei hochgeladen und Formular gespeichert.");
+
+      // Nach erstem Insert auf echte ID wechseln
+      router.replace(`/form/${data.id}`);
+    } else {
+      // 6️⃣ Bestehendes Formular updaten
+      const { error } = await supabase
+        .from("forms")
+        .update(updatedFormData)
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast.success("Datei ausgewählt.");
+    }
+
+    // 7️⃣ Signed URL neu erzeugen
+    await refreshSignedUrl(key, uploadedPath);
+
+    // 8️⃣ File-Input zurücksetzen
+    setFiles((prev) => ({ ...prev, [key]: null }));
+
+  } catch (error) {
+    console.error("Auto-Save Fehler:", error);
+    toast.error("Automatisches Speichern fehlgeschlagen.");
   }
+}
+
 
   // Upload ins private Bucket, Pfad = auth.uid()/timestamp-filename
   async function uploadFile(fileToUpload) {
